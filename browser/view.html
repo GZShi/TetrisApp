@@ -8,9 +8,8 @@
   <script src="./polyfill.js"></script>
 </head>
 <body>
-  <div>
-    <canvas></canvas>
-  </div>
+  <h1>Tetris</h1>
+  <p>score: <span id="score">0000</span></p>
   <div id="div"></div>
   <div>
     <button id="btnLeft">left</button>
@@ -32,8 +31,8 @@
   <script>
     (async function () {
       let s = await require('.', './actions.js')
-      console.log('all selectors:', s)
 
+      // button event
       btnLeft.addEventListener('click', s.tapleft)
       btnTop.addEventListener('click', s.tapup)
       btnRight.addEventListener('click', s.tapright)
@@ -43,9 +42,31 @@
       btnStart.addEventListener('click', s.tapstart)
       btnPause.addEventListener('click', s.tappause)
 
+      // debug button event
       btnStep.addEventListener('click', s.debugstep)
       btnUp.addEventListener('click', s.debugup)
       btnDown.addEventListener('click', s.debugdown)
+
+      // keyboard event
+      document.addEventListener('keydown', ev => {
+        switch (ev.key) {
+        case 'ArrowLeft': s.tapleft(); break;
+        case 'ArrowUp': s.taprotate(); break;
+        case 'ArrowRight': s.tapright(); break;
+        case 'ArrowDown': s.tapdownbegan(); break;
+        }
+      }, false)
+      let lastArrowDownKeyUp = 0
+      document.addEventListener('keyup', ev => {
+        if (ev.key == 'ArrowDown') {
+          let now = Date.now()
+          if (now - lastArrowDownKeyUp < 200) {
+            s.tapdrop()
+          }
+          s.tapdownend()
+          lastArrowDownKeyUp = now
+        }
+      }, false)
 
       s.initrender(div)
     })()

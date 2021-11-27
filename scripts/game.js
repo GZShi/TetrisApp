@@ -35,7 +35,6 @@ class Game {
     this.callbacks[evname] = callback
   }
   emit(evname, payload) {
-    console.log(`event: ${evname}`)
     let fn = this.callbacks[evname]
     if (typeof fn == 'function') {
       fn(payload)
@@ -79,7 +78,6 @@ class Game {
   }
   setTurbo(flag) {
     this.isTurbo = flag
-    console.log(`turbo=${flag ? 'on' : 'off'}`)
   }
 
   resetCurrPos() {
@@ -94,7 +92,7 @@ class Game {
     if (this.score % 32 == 0) {
       this.levelUp(1)
     }
-    this.emit('scoreChanged', this.score)
+    this.emit('score:changed', this.score)
   }
 
   updateBase() {

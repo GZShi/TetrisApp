@@ -23,9 +23,9 @@ exports.debugstep = () => ctrl.tap('debug:step')
 exports.debugup = () => ctrl.tap('debug:up')
 exports.debugdown = () => ctrl.tap('debug:down')
 
-exports.initrender = (div) => {
+exports.initrender = () => {
   if (!render) {
-    render = new RenderForBrowser(div, game)
+    render = new RenderForConsole(game)
   }
   render.draw()
 }
@@ -34,10 +34,10 @@ exports.initrender = (div) => {
 // game events
 //
 game.listen('score:changed', score => {
-  document.querySelector('span#score').innerText = String(score).padStart(4, '0')
+  $('scorelabel').text = `得分：${String(score).padStart(4, '0')}`
 })
 game.listen('gameover', () => {
-  alert(`gameover`)
+  console.log('GAME OVER')
   ctrl.tap('pause')
 })
 game.listen('render', () => render && render.draw())
@@ -46,17 +46,16 @@ game.listen('render', () => render && render.draw())
 //
 // render
 //
-class RenderForBrowser {
-  constructor(div, game) {
+const fgYellow = '\x1b[33m'
+const fgBlue = '\x1b[34m'
+const fgWhite = '\x1b[37m'
+class RenderForConsole {
+  constructor(game) {
     this.game = game
-    this.div = div
-    let style = getComputedStyle(div)
     this.xcount = game.xcount
     this.ycount = game.ycount
-    this.w = parseInt(style.width, 10)
-    this.h = parseInt(style.height, 10)
-    this.gridw = this.w/this.xcount
-    this.gridh = this.h/this.ycount
+    this.buffer = makeArr(this.ycount, () => makeArr(this.xcount, ''))
+    this.frameCount = 0
   }
 
   draw() {
@@ -64,11 +63,18 @@ class RenderForBrowser {
     this.drawLines()
     this.drawBases()
     this.drawShape()
+
+    process.stdout.write('\x1Bc')
+    console.log(`frameCount=${this.frameCount++} score=${this.game.score}`)
+    console.log(makeArr(this.xcount*2 + 2, '▉').join(''))
+    this.buffer.forEach(row => {
+      console.log('▉' + row.map(color => color ? `${color}▉▉${fgWhite}` : '  ').join('') + '▉')
+    })
+    console.log(makeArr(this.xcount*2 + 2, '▉').join(''))
   }
 
   drawBackground() {
-    this.div.style.background = '#1d1f23'
-    this.div.innerHTML = ''
+    this.buffer = makeArr(this.ycount, () => makeArr(this.xcount, ''))
   }
   drawLines() {
     // ignore
@@ -77,7 +83,7 @@ class RenderForBrowser {
     this.game.bases.forEach((base, y) => {
       base.forEach((mark, x) => {
         if (mark > 0) {
-          this.drawGrid(x, y, '#c7b77b')
+          this.drawGrid(x, y, fgYellow)
         }
       })
     })
@@ -85,27 +91,24 @@ class RenderForBrowser {
   drawShape() {
     let {pos, shape} = this.game.curr
     shape.grids.forEach(grid => {
-      this.drawGrid(grid.x+pos.x, grid.y+pos.y, '#61afef')
+      this.drawGrid(grid.x+pos.x, grid.y+pos.y, fgBlue)
     })
   }
-  drawGrid(x, y, color='#fff') {
+  drawGrid(x, y, color=fgWhite) {
     if (x < 0 || y < 0) return
     if (x >= this.xcount || y >= this.ycount) return
-
-    let margin = 2
-    let left = x*this.gridw + margin
-    let top = y*this.gridh + margin
-    let w = this.gridw - 2*margin
-    let h = this.gridh- 2*margin
-    
-    let grid = document.createElement('div')
-    grid.style.position = 'absolute'
-    grid.style.left = `${left}px`
-    grid.style.top = `${top}px`
-    grid.style.width = `${w}px`
-    grid.style.height = `${h}px`
-    grid.style.background = color
-
-    this.div.appendChild(grid)
+    this.buffer[y][x] = color
   }
+}
+
+function makeArr(size, fill) {
+  let arr = []
+  for (let i = 0; i < size; i++) {
+    if (typeof fill == 'function') {
+      arr.push(fill())
+    } else {
+      arr.push(fill)
+    }
+  }
+  return arr
 }

@@ -21,7 +21,6 @@ class Control {
     clearInterval(this.ticker)
     this.ticker = null
     this.disableInput = true
-    console.log('interval cleared')
   }
   start() {
     if (this.ticker) {
@@ -33,18 +32,16 @@ class Control {
 
     this.disableInput = false
 
-    console.log(`start with tick=${this.ticker} interval=${this.tickInterval}`)
   }
 
   tap(cmd) {
     if (this.disableInput) {
       if (cmd != 'start') {
         if (cmd.indexOf('debug:') < 0) {
-          return console.log(`tap '${cmd}' disabled`)
+          return
         }
       }
     }
-    console.log(`tap '${cmd}' done`)
 
     switch(cmd) {
     case 'left': this.game.moveCurrX(-1); break
