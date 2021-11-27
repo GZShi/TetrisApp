@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TetrisApp</title>
+  <script src="./polyfill.js"></script>
+</head>
+<body>
+  <div>
+    <canvas></canvas>
+  </div>
+  <div id="div"></div>
+  <div>
+    <button id="btnLeft">left</button>
+    <button id="btnTop">top</button>
+    <button id="btnRight">right</button>
+    <button id="btnBottom">bottom</button>
+    <button id="btnRotate">rotate</button>
+    <button id="btnDrop">drop</button>
+  </div>
+  <div>
+    <button id="btnStart">start</button>
+    <button id="btnPause">pause</button>
+  </div>
+  <div>
+    <button id="btnStep">one step</button>
+    <button id="btnUp">up</button>
+    <button id="btnDown">down</button>
+  </div>
+  <script>
+    (async function () {
+      let s = await require('.', './actions.js')
+      console.log('all selectors:', s)
+
+      btnLeft.addEventListener('click', s.tapleft)
+      btnTop.addEventListener('click', s.tapup)
+      btnRight.addEventListener('click', s.tapright)
+      btnBottom.addEventListener('click', s.tapdown)
+      btnRotate.addEventListener('click', s.taprotate)
+      btnDrop.addEventListener('click', s.tapdrop)
+      btnStart.addEventListener('click', s.tapstart)
+      btnPause.addEventListener('click', s.tappause)
+
+      btnStep.addEventListener('click', s.debugstep)
+      btnUp.addEventListener('click', s.debugup)
+      btnDown.addEventListener('click', s.debugdown)
+
+      s.initrender(div)
+    })()
+  </script>
+  <style>
+  div#div {
+    display: inline-block;
+    width: 200px;
+    height: 400px;
+    background: black;
+    position: relative;
+  }
+  </style>
+</body>
+</html>

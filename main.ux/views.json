@@ -1,0 +1,282 @@
+{
+  "props" : {
+    "id" : "main",
+    "bgcolor" : {
+      "$type" : "$color",
+      "$props" : {
+        "red" : 0,
+        "alpha" : 1,
+        "blue" : 0,
+        "green" : 0
+      }
+    }
+  },
+  "views" : [
+    {
+      "type" : "canvas",
+      "props" : {
+        "frame" : {
+          "y" : 10,
+          "x" : 20,
+          "width" : 240,
+          "height" : 450
+        },
+        "bgcolor" : {
+          "$type" : "$color",
+          "$props" : {
+            "red" : 238,
+            "alpha" : 1,
+            "blue" : 241,
+            "green" : 241
+          }
+        },
+        "id" : "canvas[0]"
+      },
+      "events" : {
+        "draw" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "initrender"
+          }
+        }
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "id" : "button[0]",
+        "title" : "↑",
+        "frame" : {
+          "y" : 480,
+          "x" : 115,
+          "width" : 50,
+          "height" : 50
+        }
+      },
+      "events" : {
+        "tapped" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "taprotate"
+          }
+        }
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "id" : "button[1]",
+        "title" : "↓",
+        "frame" : {
+          "y" : 620,
+          "x" : 115,
+          "width" : 50,
+          "height" : 50
+        }
+      },
+      "events" : {
+        "touchesBegan" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "turboon"
+          }
+        },
+        "touchesEnded": {
+          "$type": "$event",
+          "$props": {
+            "selector": "turbooff"
+          }
+        }
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "id" : "button[2]",
+        "title" : "→",
+        "frame" : {
+          "y" : 540,
+          "x" : 170,
+          "width" : 100,
+          "height" : 70
+        }
+      },
+      "events" : {
+        "tapped" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "tapright"
+          }
+        }
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "id" : "button[3]",
+        "title" : "←",
+        "frame" : {
+          "y" : 540,
+          "x" : 10,
+          "width" : 100,
+          "height" : 70
+        }
+      },
+      "events" : {
+        "tapped" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "tapleft"
+          }
+        }
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "frame" : {
+          "y" : 20,
+          "x" : 280,
+          "width" : 100,
+          "height" : 36
+        },
+        "title" : "开始",
+        "tintColor" : {
+          "$type" : "$color",
+          "$props" : {
+            "red" : 255,
+            "alpha" : 1,
+            "blue" : 255,
+            "green" : 255
+          }
+        },
+        "id" : "button[4]"
+      },
+      "events" : {
+        "tapped" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "tapstart"
+          }
+        }
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "frame" : {
+          "y" : 66,
+          "x" : 280,
+          "width" : 100,
+          "height" : 36
+        },
+        "title" : "暂停",
+        "tintColor" : {
+          "$type" : "$color",
+          "$props" : {
+            "red" : 255,
+            "alpha" : 1,
+            "blue" : 255,
+            "green" : 255
+          }
+        },
+        "id" : "button[5]"
+      },
+      "events" : {
+        "tapped" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "tappause"
+          }
+        }
+      }
+    },
+    {
+      "type" : "label",
+      "props" : {
+        "textColor": {
+          "$type": "$color",
+          "$props": {
+            "red": 198, "alpha": 1, "blue": 221, "green": 120
+          }
+        },
+        "align" : 1,
+        "frame" : {
+          "y" : 102,
+          "x" : 280,
+          "width" : 100,
+          "height" : 50
+        },
+        "id" : "scorelabel",
+        "font": {
+          "$type": "$font",
+          "$props": {
+            "name": "CascadiaCode-Regular",
+            "size": 14
+          }
+        },
+        "text" : "得分：0000"
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "frame" : {
+          "y" : 507,
+          "x" : 280,
+          "width" : 100,
+          "height" : 80
+        },
+        "title" : "Rotate",
+        "tintColor" : {
+          "$type" : "$color",
+          "$props" : {
+            "red" : 255,
+            "alpha" : 1,
+            "blue" : 255,
+            "green" : 255
+          }
+        },
+        "id" : "button[6]"
+      },
+      "events" : {
+        "tapped" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "taprotate"
+          }
+        }
+      }
+    },
+    {
+      "type" : "button",
+      "props" : {
+        "frame" : {
+          "y" : 600,
+          "x" : 280,
+          "width" : 100,
+          "height" : 40
+        },
+        "title" : "Drop",
+        "tintColor" : {
+          "$type" : "$color",
+          "$props" : {
+            "red" : 255,
+            "alpha" : 1,
+            "blue" : 255,
+            "green" : 255
+          }
+        },
+        "id" : "button[7]"
+      },
+      "events" : {
+        "tapped" : {
+          "$type" : "$event",
+          "$props" : {
+            "selector" : "tapdrop"
+          }
+        }
+      }
+    }
+  ]
+}
