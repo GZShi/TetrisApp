@@ -16,6 +16,7 @@ python -m http.server
 python -m SimpleHTTPServer
 ```
 控制说明：
+* 访问：`http://lcoalhost:8000/browser/view.html`
 * `←`和`→`控制左右方向
 * `↑`形变
 * `↓`长按加速，双击落地
