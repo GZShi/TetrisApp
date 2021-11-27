@@ -12,10 +12,12 @@ class Game {
   constructor(xcount, ycount) {
     this.tickInterval = 0.08
     this.tickCount = 0
-    this.level = 12
     this.isTurbo = false
 
     this.score = 0
+    this.lines = 0
+    this.level = 12
+    this.levelUpLines = 10
 
     this.xcount = xcount
     this.ycount = ycount
@@ -25,8 +27,8 @@ class Game {
       pos: null,
       shape: null
     }
-    this.resetCurrPos()
-    this.refreshCurrShape()
+    this.nextShape = getRandShape()
+    this.resetShape()
 
     this.bases = makeArr(ycount, () => makeArr(xcount, 0))
     this.callbacks = {}
@@ -66,15 +68,14 @@ class Game {
   }
   restart() {
     this.clearBase()
-    this.resetCurrPos()
-    this.refreshCurrShape()
+    this.resetShape()
   }
   levelUp(n) {
     this.level -= n
     if (this.level < 1) {
       this.level = 1
     }
-    this.emit('levelup', this.level)
+    this.emit('level:changed', 13-this.level)
   }
   setTurbo(flag) {
     this.isTurbo = flag
@@ -84,19 +85,27 @@ class Game {
     this.curr.pos = {x:this.midx, y: -2}
   }
   refreshCurrShape() {
-    this.curr.shape = getRandShape()
+    this.curr.shape = this.nextShape
+    this.nextShape = getRandShape()
   }
-  addScore(n) {
+  clearLines(n) {
     if (n <= 0) return
-    this.score += (1 << (n-1))
-    if (this.score % 32 == 0) {
+    this.lines += n
+    this.emit('lines:changed', this.lines)
+    if (this.lines > this.levelUpLines) {
+      this.levelUpLines *= 1.5
       this.levelUp(1)
     }
+
+    this.score += (1 << (n-1))
     this.emit('score:changed', this.score)
   }
-
+  resetShape() {
+    this.resetCurrPos()
+    this.refreshCurrShape()
+  }
   updateBase() {
-    let completed = []
+    let clears = []
     this.curr.shape.grids.forEach(({x, y}) => {
       let baseY = y+this.curr.pos.y
       let baseX = x+this.curr.pos.x
@@ -107,20 +116,18 @@ class Game {
       base[baseX] = 1
 
       if (base.every(m => m > 0)) {
-        completed.push(baseY)
+        clears.push(baseY)
       }
     })
-    if (completed.length > 0) {
-      completed.sort((a, b) => a - b)
-      completed.forEach(y => {
+    if (clears.length > 0) {
+      clears.sort((a, b) => a - b)
+      clears.forEach(y => {
         this.bases.splice(y, 1)
         this.bases.unshift(makeArr(this.xcount, 0))
       })
-      this.addScore(completed.length)
+      this.clearLines(clears.length)
     }
-
-    this.resetCurrPos()
-    this.refreshCurrShape()
+    this.resetShape()
     this.emit('render')
 
     if (this.hasHitBase) {
