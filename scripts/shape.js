@@ -6,27 +6,27 @@ const bottom = 3
 const shapes = {
   'I': [
     parseShape('01,11,31,21'),
-    parseShape('21,20,22,23')
+    parseShape('21,20,22,23'),
   ],
   'L': [
-    parseShape('11,10,22,12'),
     parseShape('11,21,31,12'),
     parseShape('11,21,22,23'),
-    parseShape('02,21,22,12')
+    parseShape('02,21,22,12'),
+    parseShape('11,10,22,12'),
   ],
   'J': [
-    parseShape('12,20,21,22'),
     parseShape('12,11,32,22'),
     parseShape('12,11,21,13'),
     parseShape('01,11,21,22'),
+    parseShape('12,20,21,22'),
   ],
   'S': [
-    parseShape('11,10,21,22'),
     parseShape('12,21,31,22'),
+    parseShape('11,10,21,22'),
   ],
   'Z': [
-    parseShape('11,20,21,12'),
     parseShape('11,21,32,22'),
+    parseShape('11,20,21,12'),
   ],
   'O': [
     parseShape('11,21,22,12')
@@ -43,7 +43,7 @@ exports.getShape = function (type, rotate=0) {
   return new Shape(type, rotate)
 }
 exports.getRandShape = function () {
-  return new Shape(randArr(types), randN(4))
+  return new Shape(randArr(types), 0)
 }
 
 class Shape {
@@ -51,6 +51,7 @@ class Shape {
     this.type = type
     this.r = rotate
     this.shape = getShapes()[this.type]
+    console.log('new shape: ', type)
   }
 
   // actions

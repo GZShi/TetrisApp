@@ -23,12 +23,11 @@ class Game {
     this.ycount = ycount
 
     this.midx = (xcount >> 1) - 2
-    this.curr = {
-      pos: null,
-      shape: null
-    }
-    this.nextShape = getRandShape()
+    this.curr = null
+    this.next = null
+    this.predict = null
     this.resetShape()
+    this.updatePredict()
 
     this.bases = makeArr(ycount, () => makeArr(xcount, 0))
     this.callbacks = {}
@@ -80,14 +79,6 @@ class Game {
   setTurbo(flag) {
     this.isTurbo = flag
   }
-
-  resetCurrPos() {
-    this.curr.pos = {x:this.midx, y: -2}
-  }
-  refreshCurrShape() {
-    this.curr.shape = this.nextShape
-    this.nextShape = getRandShape()
-  }
   clearLines(n) {
     if (n <= 0) return
     this.lines += n
@@ -100,9 +91,23 @@ class Game {
     this.score += (1 << (n-1))
     this.emit('score:changed', this.score)
   }
-  resetShape() {
-    this.resetCurrPos()
-    this.refreshCurrShape()
+  resetShape(type='?') {
+    let next = () => {
+      let shape = 'IOLJZST'.indexOf(type) >= 0 ? getShape(type) : getRandShape()
+      return {
+        pos: { x: this.midx, y: -shape.boundTop },
+        shape
+      }
+    }
+
+    if (!this.next) {
+      this.next = next()
+    }
+    this.curr = this.next
+    this.next = next()
+  }
+  updatePredict() {
+    // todo: 预测落地位置
   }
   updateBase() {
     let clears = []

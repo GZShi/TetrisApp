@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TetrisApp</title>
-  <script src="./polyfill.js"></script>
+  <script src="./commonjs-polyfill.js"></script>
 </head>
 <body>
   <h1>Tetris</h1>
@@ -32,7 +32,8 @@
   </div>
   <script>
     (async function () {
-      let s = await require('.', './actions.js')
+      let s = await $loadModule('./actions.js')
+      s.initrender(div)
 
       // button event
       btnLeft.addEventListener('click', s.tapleft)
@@ -56,6 +57,8 @@
         case 'ArrowUp': s.taprotate(); break;
         case 'ArrowRight': s.tapright(); break;
         case 'ArrowDown': s.tapdownbegan(); break;
+        default:
+          console.log(`keydown: '${ev.key}'`)
         }
       }, false)
       let lastArrowDownKeyUp = 0
@@ -63,21 +66,22 @@
         if (ev.key == 'ArrowDown') {
           let now = Date.now()
           if (now - lastArrowDownKeyUp < 200) {
+            s.tapdownend()
             s.tapdrop()
+            lastArrowDownKeyUp = 0
+          } else {
+            s.tapdownend()
+            lastArrowDownKeyUp = now
           }
-          s.tapdownend()
-          lastArrowDownKeyUp = now
         }
       }, false)
-
-      s.initrender(div)
     })()
   </script>
   <style>
   div#div {
     display: inline-block;
-    width: 400px;
-    height: 800px;
+    width: 300px;
+    height: 600px;
     background: black;
     position: relative;
   }

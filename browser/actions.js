@@ -83,7 +83,7 @@ class RenderForBrowser {
     }
 
     this.nextGrids = []
-    for (let y = 0; y < 4; y++) {
+    for (let y = 0; y < 2; y++) {
       for (let x = 0; x < 4; x++) {
         let grid = document.createElement('div')
         grid.style.position = 'absolute'
@@ -126,29 +126,14 @@ class RenderForBrowser {
     this.nextGrids.forEach(grid => {
       grid.style.background = 'gray'
     })
-    this.game.nextShape.grids.forEach(grid => {
-      this.nextGrids[4*grid.y + grid.x].style.background = '#c7b77b'
+    let {pos, shape} = this.game.next
+    shape.grids.forEach(grid => {
+      this.nextGrids[4*(grid.y-shape.boundTop) + grid.x].style.background = '#c7b77b'
     })
   }
   drawGrid(x, y, color='#fff') {
     if (x < 0 || y < 0) return
     if (x >= this.xcount || y >= this.ycount) return
-
-    // let margin = 2
-    // let left = x*this.gridw + margin
-    // let top = y*this.gridh + margin
-    // let w = this.gridw - 2*margin
-    // let h = this.gridh- 2*margin
-    
-    // let grid = document.createElement('div')
-    // grid.style.position = 'absolute'
-    // grid.style.left = `${left}px`
-    // grid.style.top = `${top}px`
-    // grid.style.width = `${w}px`
-    // grid.style.height = `${h}px`
-    // grid.style.background = color
-
-    // this.div.appendChild(grid)
 
     let grid = this.grids[y][x]
     grid.style.background = color
