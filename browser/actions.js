@@ -3,12 +3,12 @@ const {getControl} = require('../scripts/control')
 
 let game = getGame()
 let ctrl = getControl()
+ctrl.bindGame(game)
 let render = null
 
 //
 // control inputs
 //
-ctrl.bindGame(game)
 exports.tapleft = () => ctrl.tap('left')
 exports.tapup = () => ctrl.tap('top')
 exports.tapright = () => ctrl.tap('right')
@@ -28,6 +28,7 @@ exports.initrender = (div) => {
     render = new RenderForBrowser(div, game)
   }
   render.draw()
+  ctrl.tap('start')
 }
 
 //
@@ -57,25 +58,26 @@ class RenderForBrowser {
     this.game = game
     this.div = div
     let style = getComputedStyle(div)
-    this.w = parseInt(style.width, 10)
-    this.h = parseInt(style.height, 10)
+    this.w = parseInt(style.width, 10)-1
+    this.h = parseInt(style.height, 10)-1
     this.xcount = game.xcount
     this.ycount = game.ycount
-    this.gridw = this.w/this.xcount
-    this.gridh = this.h/this.ycount
+    this.gridw = (this.w/this.xcount)
+    this.gridh = (this.h/this.ycount)
 
     this.grids = []
     for (let y = 0; y < this.ycount; y++) {
       let arr = []
       for (let x = 0; x < this.xcount; x++) {
+        let inner = document.createElement('div')
+        inner.className = 'inner'
         let grid = document.createElement('div')
-        grid.style.position = 'absolute'
+        grid.appendChild(inner)
+        grid.classList.add('grid')
         grid.style.left = `${x*this.gridw}px`
         grid.style.top = `${y*this.gridh}px`
-        grid.style.width = `${this.gridw}px`
-        grid.style.height = `${this.gridh}px`
-        grid.style.background = 'gray'
-        grid.style.border = `1px solid #444`
+        grid.style.width = `${this.gridw + 1}px`
+        grid.style.height = `${this.gridh + 1}px`
         arr.push(grid)
         this.div.appendChild(grid)
       }
@@ -92,7 +94,7 @@ class RenderForBrowser {
         grid.style.width = `${this.gridw}px`
         grid.style.height = `${this.gridh}px`
         grid.style.background = 'gray'
-        grid.style.border = `1px solid #444`
+        grid.style.border = `1px solid #879372`
         this.nextGrids.push(grid)
         this.div.appendChild(grid)
       }
@@ -101,7 +103,8 @@ class RenderForBrowser {
 
   draw() {
     this.drawBases()
-    this.drawShape()
+    this.drawPredictShape()
+    this.drawCurrShape()
     this.drawNextShape()
   }
 
@@ -109,17 +112,17 @@ class RenderForBrowser {
     this.game.bases.forEach((base, y) => {
       base.forEach((mark, x) => {
         if (mark > 0) {
-          this.drawGrid(x, y, '#c7b77b')
+          this.drawGrid(x, y, 'grid base')
         } else {
-          this.drawGrid(x, y, '#1d1f23')
+          this.drawGrid(x, y, 'grid')
         }
       })
     })
   }
-  drawShape() {
+  drawCurrShape() {
     let {pos, shape} = this.game.curr
     shape.grids.forEach(grid => {
-      this.drawGrid(grid.x+pos.x, grid.y+pos.y, '#61afef')
+      this.drawGrid(grid.x+pos.x, grid.y+pos.y, 'grid curr')
     })
   }
   drawNextShape() {
@@ -131,11 +134,17 @@ class RenderForBrowser {
       this.nextGrids[4*(grid.y-shape.boundTop) + grid.x].style.background = '#c7b77b'
     })
   }
-  drawGrid(x, y, color='#fff') {
+  drawPredictShape() {
+    let {pos, shape} = this.game.predict
+    shape.grids.forEach(grid => {
+      this.drawGrid(grid.x+pos.x, grid.y+pos.y, 'grid predict')
+    })
+  }
+  drawGrid(x, y, className='grid') {
     if (x < 0 || y < 0) return
     if (x >= this.xcount || y >= this.ycount) return
 
     let grid = this.grids[y][x]
-    grid.style.background = color
+    grid.className = className
   }
 }

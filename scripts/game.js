@@ -3,14 +3,14 @@ let { getShape, getRandShape } = require('./shape.js')
 let instance = null
 exports.getGame = function () {
   if (!instance) {
-    instance = new Game(10, 20)
+    let n = 10
+    instance = new Game(n, 2*n)
   }
   return instance
 }
 
 class Game {
   constructor(xcount, ycount) {
-    this.tickInterval = 0.08
     this.tickCount = 0
     this.isTurbo = false
 
@@ -22,15 +22,14 @@ class Game {
     this.xcount = xcount
     this.ycount = ycount
 
+    this.bases = makeArr(ycount, () => makeArr(xcount, 0))
+    this.callbacks = {}
     this.midx = (xcount >> 1) - 2
     this.curr = null
     this.next = null
     this.predict = null
     this.resetShape()
     this.updatePredict()
-
-    this.bases = makeArr(ycount, () => makeArr(xcount, 0))
-    this.callbacks = {}
   }
   listen(evname, callback) {
     this.callbacks[evname] = callback
@@ -59,11 +58,8 @@ class Game {
     }
   }
   pause() {
-    if (this.timer) {
-      this.timer.invalidate()
-      this.timer = null
-      this.emit('pause')
-    }
+    this.stopped = true
+    this.emit('pause')
   }
   restart() {
     this.clearBase()
@@ -105,9 +101,18 @@ class Game {
     }
     this.curr = this.next
     this.next = next()
+    this.predict = {
+      pos: {x: this.curr.pos.x, y:this.curr.pos.y},
+      shape: this.curr.shape
+    }
+
+    this.updatePredict()
   }
   updatePredict() {
-    // todo: 预测落地位置
+    let oldy = this.curr.pos.y
+    while (this.moveCurrY(1, false)) {}
+    this.predict.pos.y = this.curr.pos.y
+    this.curr.pos.y = oldy
   }
   updateBase() {
     let clears = []
@@ -162,6 +167,8 @@ class Game {
       this.curr.shape.rotate(-1)
       return false
     } else {
+      this.predict.pos.x = this.curr.pos.x
+      this.updatePredict()
       if (triggerRender) this.emit('render')
       return true
     }
@@ -180,6 +187,8 @@ class Game {
       this.curr.pos.x = oldx
       return false
     } else {
+      this.predict.pos.x = this.curr.pos.x
+      this.updatePredict()
       if (triggerRender) this.emit('render')
       return true
     }
@@ -207,9 +216,7 @@ class Game {
     }
   }
   dropCurr() {
-    while (this.moveCurrY(1, false)) {
-      // continue drop
-    }
+    this.curr = this.predict
     this.updateBase()
   }
   // 活动块距离左边框的剩余格子数（可左移距离）

@@ -5,30 +5,41 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TetrisApp</title>
+  <link rel="stylesheet" href="./style.css">
   <script src="./commonjs-polyfill.js"></script>
 </head>
 <body>
-  <h1>Tetris</h1>
-  <p>score: <span id="score">0000</span></p>
-  <p>lines: <span id="lines">0000</span></p>
-  <p>level: <span id="level">1</span></p>
-  <div id="div"></div>
-  <div>
-    <button id="btnLeft">left</button>
-    <button id="btnTop">top</button>
-    <button id="btnRight">right</button>
-    <button id="btnBottom">bottom</button>
-    <button id="btnRotate">rotate</button>
-    <button id="btnDrop">drop</button>
-  </div>
-  <div>
-    <button id="btnStart">start</button>
-    <button id="btnPause">pause</button>
-  </div>
-  <div>
-    <button id="btnStep">one step</button>
-    <button id="btnUp">up</button>
-    <button id="btnDown">down</button>
+  <div class="game-container">
+    <div class="screen-container">
+      <div class="play-board">
+        <div id="div" class="screen"></div>
+      </div>
+      <div class="info-board">
+        <h1>Tetris</h1>
+        <p>score: <span id="score">0000</span></p>
+        <p>lines: <span id="lines">0000</span></p>
+        <p>level: <span id="level">1</span></p>
+      </div>
+    </div>
+    <div class="control-container">
+      <div>
+        <button class="circle" id="btnLeft">←</button>
+        <button class="circle" id="btnTop">↑</button>
+        <button class="circle" id="btnRight">→</button>
+        <button class="circle" id="btnBottom">↓</button>
+        <button class="circle" id="btnRotate">rotate</button>
+        <button class="circle" id="btnDrop">drop</button>
+      </div>
+      <div>
+        <button id="btnStart">start</button>
+        <button id="btnPause">pause</button>
+      </div>
+      <div>
+        <button id="btnStep">one step</button>
+        <button id="btnUp">up</button>
+        <button id="btnDown">down</button>
+      </div>
+    </div>
   </div>
   <script>
     (async function () {
@@ -59,7 +70,9 @@
         case 'ArrowDown': s.tapdownbegan(); break;
         default:
           console.log(`keydown: '${ev.key}'`)
+          return
         }
+        ev.preventDefault()
       }, false)
       let lastArrowDownKeyUp = 0
       document.addEventListener('keyup', ev => {
@@ -80,10 +93,11 @@
   <style>
   div#div {
     display: inline-block;
-    width: 300px;
-    height: 600px;
-    background: black;
+    width: 401px;
+    height: 801px;
+    background: #9ead86;
     position: relative;
+    border: 4px solid #444;
   }
   </style>
 </body>
