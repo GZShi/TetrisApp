@@ -29,6 +29,7 @@ exports.initrender = (div) => {
   }
   render.draw()
   ctrl.tap('start')
+  // ctrl.autoPlay('drop', 'drop', 'drop', 'drop', 'rotate', 'right', 'right', 'drop')
 }
 
 //
@@ -39,6 +40,9 @@ game.listen('score:changed', score => {
 })
 game.listen('lines:changed', lines => {
   document.querySelector('span#lines').innerText = String(lines).padStart(4, '0')
+})
+game.listen('combo:changed', combo => {
+  document.querySelector('span#combo').innerText = String(combo).padStart(4, '0')
 })
 game.listen('level:changed', level => {
   document.querySelector('span#level').innerText = String(level)
@@ -89,10 +93,10 @@ class RenderForBrowser {
       for (let x = 0; x < 4; x++) {
         let grid = document.createElement('div')
         grid.style.position = 'absolute'
-        grid.style.left = `${x*this.gridw + this.w + this.gridw}px`
-        grid.style.top = `${y*this.gridh + this.gridh}px`
-        grid.style.width = `${this.gridw}px`
-        grid.style.height = `${this.gridh}px`
+        grid.style.left = `${x*15 + this.w + 40}px`
+        grid.style.top = `${y*15 + this.h - 100}px`
+        grid.style.width = `${15}px`
+        grid.style.height = `${15}px`
         grid.style.background = 'gray'
         grid.style.border = `1px solid #879372`
         this.nextGrids.push(grid)

@@ -3,7 +3,7 @@ let { getShape, getRandShape } = require('./shape.js')
 let instance = null
 exports.getGame = function () {
   if (!instance) {
-    let n = 10
+    let n = 5
     instance = new Game(n, 2*n)
   }
   return instance
@@ -15,6 +15,7 @@ class Game {
     this.isTurbo = false
 
     this.score = 0
+    this.combo = 0
     this.lines = 0
     this.level = 12
     this.levelUpLines = 10
@@ -77,6 +78,13 @@ class Game {
   }
   clearLines(n) {
     if (n <= 0) return
+    if (n == 4) {
+      this.combo++
+      this.emit('combo:changed', this.combo)
+    } else {
+      this.combo = 0
+      this.emit('combo:changed', this.combo)
+    }
     this.lines += n
     this.emit('lines:changed', this.lines)
     if (this.lines > this.levelUpLines) {
@@ -84,10 +92,10 @@ class Game {
       this.levelUp(1)
     }
 
-    this.score += (1 << (n-1))
+    this.score += (1 << (n-1)) * (1<<Math.min(this.combo, 5))
     this.emit('score:changed', this.score)
   }
-  resetShape(type='?') {
+  resetShape(type='I') {
     let next = () => {
       let shape = 'IOLJZST'.indexOf(type) >= 0 ? getShape(type) : getRandShape()
       return {

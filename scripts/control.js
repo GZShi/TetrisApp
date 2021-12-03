@@ -31,7 +31,20 @@ class Control {
     }, this.tickInterval)
 
     this.disableInput = false
-
+  }
+  autoPlay(...cmds) {
+    if (!cmds || cmds.length == 0) {
+      return
+    }
+    let index = 0
+    setInterval(() => {
+      let cmd = cmds[index]
+      index++
+      if (index == cmds.length) {
+        index = 0
+      }
+      this.tap(cmd)
+    }, 200)
   }
 
   tap(cmd) {

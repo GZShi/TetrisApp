@@ -13,6 +13,13 @@ body {
   display: inline-block;
 }
 
+.info-board {
+  font-size: 10px;
+  font-family: sans-serif;
+  text-align: left;
+  padding: 20px;
+}
+
 .screen-container {
   background-color: #9ead86;
   display: flex;
