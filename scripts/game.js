@@ -3,7 +3,7 @@ let { getShape, getRandShape } = require('./shape.js')
 let instance = null
 exports.getGame = function () {
   if (!instance) {
-    let n = 5
+    let n = 13
     instance = new Game(n, 2*n)
   }
   return instance
@@ -54,10 +54,10 @@ class Game {
   emit(evname, payload) {
     let fn = this.evCallbacks[evname]
     if (typeof fn == 'function') {
-      console.log(`√ emit event: '${evname}'`, payload)
+      // console.log(`√ emit event: '${evname}'`, payload)
       fn(payload)
     } else {
-      console.log(`× emit event: '${evname}'`)
+      // console.log(`× emit event: '${evname}'`)
     }
   }
   runTick() {
@@ -99,20 +99,7 @@ class Game {
         }
       })
     })
-    // step2: fill curr
-    this.curr.shape.grids.forEach(grid => {
-      let y = grid.y + this.curr.pos.y
-      let x = grid.x + this.curr.pos.x
-      if (y < 0 || y >= this.ycount) return
-      if (x < 0 || x >= this.xcount) return
-      let m = this.masks[y][x]
-      if (m.type !== maskType.shape) {
-        m.type = maskType.shape
-        changes.push(m)
-      }
-      m.version = version
-    })
-    // step3: fill predict
+    // step2: fill predict
     this.predict.shape.grids.forEach(grid => {
       let y = grid.y + this.predict.pos.y
       let x = grid.x + this.predict.pos.x
@@ -121,6 +108,19 @@ class Game {
       let m = this.masks[y][x]
       if (m.type !== maskType.predict) {
         m.type = maskType.predict
+        changes.push(m)
+      }
+      m.version = version
+    })
+    // step3: fill curr
+    this.curr.shape.grids.forEach(grid => {
+      let y = grid.y + this.curr.pos.y
+      let x = grid.x + this.curr.pos.x
+      if (y < 0 || y >= this.ycount) return
+      if (x < 0 || x >= this.xcount) return
+      let m = this.masks[y][x]
+      if (m.type !== maskType.shape) {
+        m.type = maskType.shape
         changes.push(m)
       }
       m.version = version
