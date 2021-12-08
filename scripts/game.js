@@ -8,6 +8,13 @@ exports.getGame = function () {
   }
   return instance
 }
+let maskType = {
+  empty: 0,
+  shape: 1,
+  predict: 2,
+  base: 3,
+}
+exports.maskType = maskType
 
 class Game {
   constructor(xcount, ycount) {
@@ -23,22 +30,34 @@ class Game {
     this.xcount = xcount
     this.ycount = ycount
 
+    this.maskVersion = 0
+    this.allMasks = []
+    this.masks = makeArr(ycount, y => {
+      return makeArr(xcount, x => {
+        let m = {x, y, version: this.maskVersion, type: maskType.empty}
+        this.allMasks.push(m)
+        return m
+      })
+    })
+
     this.bases = makeArr(ycount, () => makeArr(xcount, 0))
-    this.callbacks = {}
+    this.evCallbacks = {}
     this.midx = (xcount >> 1) - 2
     this.curr = null
     this.next = null
     this.predict = null
     this.resetShape()
-    this.updatePredict()
   }
   listen(evname, callback) {
-    this.callbacks[evname] = callback
+    this.evCallbacks[evname] = callback
   }
   emit(evname, payload) {
-    let fn = this.callbacks[evname]
+    let fn = this.evCallbacks[evname]
     if (typeof fn == 'function') {
+      console.log(`√ emit event: '${evname}'`, payload)
       fn(payload)
+    } else {
+      console.log(`× emit event: '${evname}'`)
     }
   }
   runTick() {
@@ -48,15 +67,12 @@ class Game {
       if (!moved) {
         this.updateBase()
       } else {
-        this.emit('render')
+        this.emit('render', this.getMasksDiff())
       }
     }
   }
-  start() {
-    if (this.stopped) {
-      this.stopped = false
-      this.emit('start')
-    }
+  render() {
+    this.emit('render', this.getMasksDiff(true))
   }
   pause() {
     this.stopped = true
@@ -65,6 +81,65 @@ class Game {
   restart() {
     this.clearBase()
     this.resetShape()
+  }
+  getMasksDiff(forceUpdate=false) {
+    let version = this.maskVersion++
+    let changes = []
+
+    // step1: fill base
+    this.bases.forEach((base, y) => {
+      base.forEach((mark, x) => {
+        if (mark > 0) {
+          let m = this.masks[y][x]
+          if (m.type !== maskType.base) {
+            m.type = maskType.base
+            changes.push(m)
+          }
+          m.version = version
+        }
+      })
+    })
+    // step2: fill curr
+    this.curr.shape.grids.forEach(grid => {
+      let y = grid.y + this.curr.pos.y
+      let x = grid.x + this.curr.pos.x
+      if (y < 0 || y >= this.ycount) return
+      if (x < 0 || x >= this.xcount) return
+      let m = this.masks[y][x]
+      if (m.type !== maskType.shape) {
+        m.type = maskType.shape
+        changes.push(m)
+      }
+      m.version = version
+    })
+    // step3: fill predict
+    this.predict.shape.grids.forEach(grid => {
+      let y = grid.y + this.predict.pos.y
+      let x = grid.x + this.predict.pos.x
+      if (y < 0 || y >= this.ycount) return
+      if (x < 0 || x >= this.xcount) return
+      let m = this.masks[y][x]
+      if (m.type !== maskType.predict) {
+        m.type = maskType.predict
+        changes.push(m)
+      }
+      m.version = version
+    })
+    // step4: delete low verison
+    this.masks.forEach((arr, y) => {
+      arr.forEach((m, x) => {
+        if (m.version !== version) {
+          m.type = maskType.empty
+          changes.push(m)
+        }
+      })
+    })
+
+    if (forceUpdate) {
+      return this.allMasks
+    }
+
+    return changes
   }
   levelUp(n) {
     this.level -= n
@@ -115,6 +190,7 @@ class Game {
     }
 
     this.updatePredict()
+    this.emit('render', this.getMasksDiff())
   }
   updatePredict() {
     let oldy = this.curr.pos.y
@@ -146,7 +222,6 @@ class Game {
       this.clearLines(clears.length)
     }
     this.resetShape()
-    this.emit('render')
 
     if (this.hasHitBase) {
       this.pause()
@@ -176,8 +251,10 @@ class Game {
       return false
     } else {
       this.predict.pos.x = this.curr.pos.x
-      this.updatePredict()
-      if (triggerRender) this.emit('render')
+      if (triggerRender) {
+        this.updatePredict()
+        this.emit('render', this.getMasksDiff())
+      }
       return true
     }
   }
@@ -196,8 +273,10 @@ class Game {
       return false
     } else {
       this.predict.pos.x = this.curr.pos.x
-      this.updatePredict()
-      if (triggerRender) this.emit('render')
+      if (triggerRender) {
+        this.updatePredict()
+        this.emit('render', this.getMasksDiff())
+      }
       return true
     }
   }
@@ -219,7 +298,7 @@ class Game {
       this.curr.pos.y = oldy
       return false
     } else {
-      if (triggerRender) this.emit('render')
+      if (triggerRender) this.emit('render', this.getMasksDiff())
       return true
     }
   }
@@ -252,7 +331,7 @@ function makeArr(size, fill) {
   let arr = []
   for (let i = 0; i < size; i++) {
     if (typeof fill == 'function') {
-      arr.push(fill())
+      arr.push(fill(i))
     } else {
       arr.push(fill)
     }

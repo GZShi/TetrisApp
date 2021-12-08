@@ -1,4 +1,4 @@
-const {getGame} = require('../scripts/game')
+const {getGame, maskType} = require('../scripts/game')
 const {getControl} = require('../scripts/control')
 
 let game = getGame()
@@ -26,8 +26,8 @@ exports.debugdown = () => ctrl.tap('debug:down')
 exports.initrender = (div) => {
   if (!render) {
     render = new RenderForBrowser(div, game)
+    game.render()
   }
-  render.draw()
   ctrl.tap('start')
   // ctrl.autoPlay('drop', 'drop', 'drop', 'drop', 'rotate', 'right', 'right', 'drop')
 }
@@ -51,7 +51,7 @@ game.listen('gameover', () => {
   alert(`gameover`)
   ctrl.tap('pause')
 })
-game.listen('render', () => render && render.draw())
+game.listen('render', (changes) => render && render.draw(changes))
 
 
 //
@@ -105,30 +105,20 @@ class RenderForBrowser {
     }
   }
 
-  draw() {
-    this.drawBases()
-    this.drawPredictShape()
-    this.drawCurrShape()
+  draw(changes) {
+    ;(changes || []).forEach(({x, y, type}) => {
+      switch(type) {
+      case maskType.base: this.drawGrid(x, y, 'grid base'); break;
+      case maskType.shape: this.drawGrid(x, y, 'grid curr'); break;
+      case maskType.predict: this.drawGrid(x, y, 'grid predict'); break;
+      case maskType.empty: this.drawGrid(x, y, 'grid'); break;
+      default:
+      }
+    })
+
     this.drawNextShape()
   }
 
-  drawBases() {
-    this.game.bases.forEach((base, y) => {
-      base.forEach((mark, x) => {
-        if (mark > 0) {
-          this.drawGrid(x, y, 'grid base')
-        } else {
-          this.drawGrid(x, y, 'grid')
-        }
-      })
-    })
-  }
-  drawCurrShape() {
-    let {pos, shape} = this.game.curr
-    shape.grids.forEach(grid => {
-      this.drawGrid(grid.x+pos.x, grid.y+pos.y, 'grid curr')
-    })
-  }
   drawNextShape() {
     this.nextGrids.forEach(grid => {
       grid.style.background = 'gray'
@@ -136,12 +126,6 @@ class RenderForBrowser {
     let {pos, shape} = this.game.next
     shape.grids.forEach(grid => {
       this.nextGrids[4*(grid.y-shape.boundTop) + grid.x].style.background = '#c7b77b'
-    })
-  }
-  drawPredictShape() {
-    let {pos, shape} = this.game.predict
-    shape.grids.forEach(grid => {
-      this.drawGrid(grid.x+pos.x, grid.y+pos.y, 'grid predict')
     })
   }
   drawGrid(x, y, className='grid') {
