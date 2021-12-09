@@ -106,12 +106,13 @@ class RenderForBrowser {
   }
 
   draw(changes) {
-    ;(changes || []).forEach(({x, y, type}) => {
+    changes = changes || []
+    changes.forEach(({x, y, type}) => {
       switch(type) {
-      case maskType.base: this.drawGrid(x, y, 'grid base'); break;
-      case maskType.shape: this.drawGrid(x, y, 'grid curr'); break;
+      case maskType.base:    this.drawGrid(x, y, 'grid base');    break;
+      case maskType.shape:   this.drawGrid(x, y, 'grid curr');    break;
       case maskType.predict: this.drawGrid(x, y, 'grid predict'); break;
-      case maskType.empty: this.drawGrid(x, y, 'grid'); break;
+      case maskType.empty:   this.drawGrid(x, y, 'grid');         break;
       default:
       }
     })

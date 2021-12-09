@@ -25,6 +25,7 @@ exports.debugdown = () => ctrl.tap('debug:down')
 
 exports.initrender = (view, ctx) => {
   if (!render) {
+    console.log('init render')
     render = new RenderForJSBox(view, ctx, game)
   }
   render.draw()
@@ -36,12 +37,21 @@ exports.initrender = (view, ctx) => {
 game.listen('score:changed', score => {
   $('scorelabel').text = `得分：${String(score).padStart(4, '0')}`
 })
+game.listen('lines:changed', lines => {
+  $('lineslabel').text = `行数：${String(lines).padStart(4, '0')}`
+})
+game.listen('combo:changed', combo => {
+  $('combolabel').text = `连击：${String(combo).padStart(4, '0')}`
+})
+game.listen('level:changed', level => {
+  $('levellabel').text = `等级：${String(level).padStart(4, '0')}`
+})
 game.listen('gameover', () => {
   alert(`gameover`)
   ctrl.tap('pause')
 })
-game.listen('render', (changes) => render && render.draw(changes))
-
+game.listen('render', (changes) => render && render.storeChanges(changes))
+game.setRenderForceUpdate(true)
 
 //
 // render
@@ -64,18 +74,21 @@ class RenderForJSBox {
       shape: $color('#61afef'),
       predict: $color('#444444')
     }
+    this.changes = []
   }
 
-  draw(changes) {
+  storeChanges(changes) {
+    this.changes = changes || []
+    this.view.runtimeValue().invoke('setNeedsDisplay')
+  }
+  draw() {
     if (!this.view || !this.ctx) return
 
-    if (this.firstRender) {
-      this.firstRender = false
-      this.drawBackground()
-      this.drawLines()
-    }
+    this.drawBackground()
+    this.drawLines()
     
-    ;(changes||[]).forEach(({x,y,type}) => {
+    let changes = this.changes || []
+    changes.forEach(({x,y,type}) => {
       switch(type) {
         case maskType.base: this.drawGrid(x, y, this.color.base); break;
         case maskType.shape: this.drawGrid(x, y, this.color.shape); break;
@@ -84,8 +97,7 @@ class RenderForJSBox {
         default:
       }
     })
-
-    this.view.runtimeValue().invoke('setNeedsDisplay')
+    console.log(`draw changes=${changes.length}`)
   }
 
   drawBackground() {
@@ -115,6 +127,5 @@ class RenderForJSBox {
     let w = this.gridw - 2*margin
     let h = this.gridh - 2*margin
     this.ctx.fillRect($rect(posx, posy, w, h))
-    console.log(`drawGrid(${posx>>0},${posy>>0},${w>>0},${h>>0},${color.hexCode})`)
   }
 }

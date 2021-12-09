@@ -39,6 +39,7 @@ class Game {
         return m
       })
     })
+    this.renderForceUpdate = false
 
     this.bases = makeArr(ycount, () => makeArr(xcount, 0))
     this.evCallbacks = {}
@@ -71,8 +72,8 @@ class Game {
       }
     }
   }
-  render() {
-    this.emit('render', this.getMasksDiff(true))
+  render(forceUpdate=true) {
+    this.emit('render', this.getMasksDiff(forceUpdate))
   }
   pause() {
     this.stopped = true
@@ -82,9 +83,19 @@ class Game {
     this.clearBase()
     this.resetShape()
   }
+  setRenderForceUpdate(b=false) {
+    this.renderForceUpdate = b
+  }
   getMasksDiff(forceUpdate=false) {
     let version = this.maskVersion++
     let changes = []
+
+    if (forceUpdate || this.renderForceUpdate) {
+      this.allMasks.forEach(m => {
+        m.version = version
+        m.type = this.empty
+      })
+    }
 
     // step1: fill base
     this.bases.forEach((base, y) => {
@@ -125,19 +136,14 @@ class Game {
       }
       m.version = version
     })
-    // step4: delete low verison
-    this.masks.forEach((arr, y) => {
-      arr.forEach((m, x) => {
-        if (m.version !== version) {
-          m.type = maskType.empty
-          changes.push(m)
-        }
-      })
+    // step4: deleted grids
+    this.allMasks.forEach(m => {
+      if (m.version !== version && m.type !== maskType.empty) {
+        m.version = version
+        m.type = maskType.empty
+        changes.push(m)
+      }
     })
-
-    if (forceUpdate) {
-      return this.allMasks
-    }
 
     return changes
   }

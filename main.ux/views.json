@@ -202,7 +202,7 @@
         },
         "align" : 1,
         "frame" : {
-          "y" : 102,
+          "y" : 100,
           "x" : 280,
           "width" : 100,
           "height" : 50
@@ -216,6 +216,87 @@
           }
         },
         "text" : "得分：0000"
+      }
+    },
+    {
+      "type" : "label",
+      "props" : {
+        "textColor": {
+          "$type": "$color",
+          "$props": {
+            "red": 198, "alpha": 1, "blue": 221, "green": 120
+          }
+        },
+        "align" : 1,
+        "frame" : {
+          "y" : 130,
+          "x" : 280,
+          "width" : 100,
+          "height" : 50
+        },
+        "id" : "lineslabel",
+        "font": {
+          "$type": "$font",
+          "$props": {
+            "name": "CascadiaCode-Regular",
+            "size": 14
+          }
+        },
+        "text" : "行数：0000"
+      }
+    },
+    {
+      "type" : "label",
+      "props" : {
+        "textColor": {
+          "$type": "$color",
+          "$props": {
+            "red": 198, "alpha": 1, "blue": 221, "green": 120
+          }
+        },
+        "align" : 1,
+        "frame" : {
+          "y" : 160,
+          "x" : 280,
+          "width" : 100,
+          "height" : 50
+        },
+        "id" : "combolabel",
+        "font": {
+          "$type": "$font",
+          "$props": {
+            "name": "CascadiaCode-Regular",
+            "size": 14
+          }
+        },
+        "text" : "连击：0000"
+      }
+    },
+    {
+      "type" : "label",
+      "props" : {
+        "textColor": {
+          "$type": "$color",
+          "$props": {
+            "red": 198, "alpha": 1, "blue": 221, "green": 120
+          }
+        },
+        "align" : 1,
+        "frame" : {
+          "y" : 190,
+          "x" : 280,
+          "width" : 100,
+          "height" : 50
+        },
+        "id" : "levellabel",
+        "font": {
+          "$type": "$font",
+          "$props": {
+            "name": "CascadiaCode-Regular",
+            "size": 14
+          }
+        },
+        "text" : "等级：0000"
       }
     },
     {
