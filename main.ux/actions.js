@@ -1,4 +1,4 @@
-const {getGame} = require('./scripts/game')
+const {getGame, maskType} = require('./scripts/game')
 const {getControl} = require('../scripts/control')
 
 let game = getGame()
@@ -40,7 +40,7 @@ game.listen('gameover', () => {
   alert(`gameover`)
   ctrl.tap('pause')
 })
-game.listen('render', () => render && render.draw())
+game.listen('render', (changes) => render && render.draw(changes))
 
 
 //
@@ -57,15 +57,33 @@ class RenderForJSBox {
     this.h = view.frame.height
     this.gridw = this.w/this.xcount
     this.gridh = this.h/this.ycount
+    this.firstRender = true
+    this.color = {
+      empty: $color('#1d1f23'),
+      base: $color('#c7b77b'),
+      shape: $color('#61afef'),
+      predict: $color('#444444')
+    }
   }
 
-  draw() {
+  draw(changes) {
     if (!this.view || !this.ctx) return
 
-    this.drawBackground()
-    this.drawLines()
-    this.drawBases()
-    this.drawShape()
+    if (this.firstRender) {
+      this.firstRender = false
+      this.drawBackground()
+      this.drawLines()
+    }
+    
+    ;(changes||[]).forEach(({x,y,type}) => {
+      switch(type) {
+        case maskType.base: this.drawGrid(x, y, this.color.base); break;
+        case maskType.shape: this.drawGrid(x, y, this.color.shape); break;
+        case maskType.predict: this.drawGrid(x, y, this.color.predict); break;
+        case maskType.empty: this.drawGrid(x, y, this.color.empty); break;
+        default:
+      }
+    })
 
     this.view.runtimeValue().invoke('setNeedsDisplay')
   }
@@ -89,28 +107,14 @@ class RenderForJSBox {
     this.ctx.strokePath()
     this.ctx.closePath()
   }
-  drawBases() {
-    this.ctx.fillColor = $color('#c7b77b')
-    this.game.bases.forEach((base, y) => {
-      base.forEach((mark, x) => {
-        if (mark > 0) this.drawGrid(x, y)
-      })
-    })
-  }
-  drawShape() {
-    this.ctx.fillColor = $color('#61afef')
-    let {pos, shape} = this.game.curr
-    shape.grids.forEach(grid => {
-      this.drawGrid(grid.x+pos.x, grid.y+pos.y)
-    })
-  }
-  drawGrid(x, y) {
+  drawGrid(x, y, color) {
+    this.ctx.fillColor = color
     let margin = 2
-    this.ctx.fillRect($rect(
-      x*this.gridw + margin,
-      y*this.gridh + margin,
-      this.gridw - 2*margin,
-      this.gridh- 2*margin
-    ))
+    let posx = x*this.gridw + margin
+    let posy = y*this.gridh + margin
+    let w = this.gridw - 2*margin
+    let h = this.gridh - 2*margin
+    this.ctx.fillRect($rect(posx, posy, w, h))
+    console.log(`drawGrid(${posx>>0},${posy>>0},${w>>0},${h>>0},${color.hexCode})`)
   }
 }

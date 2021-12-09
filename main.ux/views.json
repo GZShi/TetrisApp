@@ -78,13 +78,13 @@
         "touchesBegan" : {
           "$type" : "$event",
           "$props" : {
-            "selector" : "turboon"
+            "selector" : "tapdownbegan"
           }
         },
         "touchesEnded": {
           "$type": "$event",
           "$props": {
-            "selector": "turbooff"
+            "selector": "tapdownend"
           }
         }
       }
