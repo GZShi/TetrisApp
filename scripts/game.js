@@ -177,12 +177,13 @@ class Game {
     this.emit('score:changed', this.score)
   }
   resetShape(type='I') {
+    let xRange = [0, this.xcount]
+    let yRange = [0, this.ycount]
     let next = () => {
+      let x = this.midx
+      let y = -shape.boundTop
       let shape = 'IOLJZST'.indexOf(type) >= 0 ? getShape(type) : getRandShape()
-      return {
-        pos: { x: this.midx, y: -shape.boundTop },
-        shape
-      }
+      return new Block(x, y, shape, xRange, yRange)
     }
 
     if (!this.next) {
@@ -190,19 +191,14 @@ class Game {
     }
     this.curr = this.next
     this.next = next()
-    this.predict = {
-      pos: {x: this.curr.pos.x, y:this.curr.pos.y},
-      shape: this.curr.shape
-    }
+    this.predict = new Block(this.curr.x, this.curr.y, this.curr.shape, xRange, yRange)
 
     this.updatePredict()
     this.emit('render', this.getMasksDiff())
   }
   updatePredict() {
-    let oldy = this.curr.pos.y
-    while (this.moveCurrY(1, false)) {}
-    this.predict.pos.y = this.curr.pos.y
-    this.curr.pos.y = oldy
+    this.predict.y = this.curr.y
+    while (this.predict.move(this.BASE, 0, 1)) {;}
   }
   updateBase() {
     let clears = []
