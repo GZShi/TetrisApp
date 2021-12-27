@@ -16,16 +16,20 @@ let maskType = {
 }
 exports.maskType = maskType
 
+
+
 class Game {
   constructor(xcount, ycount) {
     this.tickCount = 0
     this.isTurbo = false
 
-    this.score = 0
-    this.combo = 0
-    this.lines = 0
-    this.level = 12
-    this.levelUpLines = 10
+    this.ctx = new InfoBoard()
+    this.block = {
+      base: new BaseBlock(xcount, ycount),
+      curr: null,
+      predict: null,
+      nexts: [null],
+    }
 
     this.xcount = xcount
     this.ycount = ycount
@@ -41,25 +45,8 @@ class Game {
     })
     this.renderForceUpdate = false
 
-    this.bases = makeArr(ycount, () => makeArr(xcount, 0))
-    this.evCallbacks = {}
     this.midx = (xcount >> 1) - 2
-    this.curr = null
-    this.next = null
-    this.predict = null
     this.resetShape()
-  }
-  listen(evname, callback) {
-    this.evCallbacks[evname] = callback
-  }
-  emit(evname, payload) {
-    let fn = this.evCallbacks[evname]
-    if (typeof fn == 'function') {
-      // console.log(`√ emit event: '${evname}'`, payload)
-      fn(payload)
-    } else {
-      // console.log(`× emit event: '${evname}'`)
-    }
   }
   runTick() {
     this.tickCount++
@@ -68,16 +55,16 @@ class Game {
       if (!moved) {
         this.updateBase()
       } else {
-        this.emit('render', this.getMasksDiff())
+        this.ev.emit('render', this.getMasksDiff())
       }
     }
   }
   render(forceUpdate=true) {
-    this.emit('render', this.getMasksDiff(forceUpdate))
+    this.ev.emit('render', this.getMasksDiff(forceUpdate))
   }
   pause() {
     this.stopped = true
-    this.emit('pause')
+    this.ev.emit('pause')
   }
   restart() {
     this.clearBase()
@@ -147,34 +134,8 @@ class Game {
 
     return changes
   }
-  levelUp(n) {
-    this.level -= n
-    if (this.level < 1) {
-      this.level = 1
-    }
-    this.emit('level:changed', 13-this.level)
-  }
   setTurbo(flag) {
     this.isTurbo = flag
-  }
-  clearLines(n) {
-    if (n <= 0) return
-    if (n == 4) {
-      this.combo++
-      this.emit('combo:changed', this.combo)
-    } else {
-      this.combo = 0
-      this.emit('combo:changed', this.combo)
-    }
-    this.lines += n
-    this.emit('lines:changed', this.lines)
-    if (this.lines > this.levelUpLines) {
-      this.levelUpLines *= 1.5
-      this.levelUp(1)
-    }
-
-    this.score += (1 << (n-1)) * (1<<Math.min(this.combo, 5))
-    this.emit('score:changed', this.score)
   }
   resetShape(type='I') {
     let xRange = [0, this.xcount]
@@ -194,138 +155,15 @@ class Game {
     this.predict = new Block(this.curr.x, this.curr.y, this.curr.shape, xRange, yRange)
 
     this.updatePredict()
-    this.emit('render', this.getMasksDiff())
+    this.ev.emit('render', this.getMasksDiff())
   }
   updatePredict() {
     this.predict.y = this.curr.y
     while (this.predict.move(this.BASE, 0, 1)) {;}
   }
-  updateBase() {
-    let clears = []
-    this.curr.shape.grids.forEach(({x, y}) => {
-      let baseY = y+this.curr.pos.y
-      let baseX = x+this.curr.pos.x
-      let base = this.bases[baseY]
-      if (!base) {
-        return
-      }
-      base[baseX] = 1
-
-      if (base.every(m => m > 0)) {
-        clears.push(baseY)
-      }
-    })
-    if (clears.length > 0) {
-      clears.sort((a, b) => a - b)
-      clears.forEach(y => {
-        this.bases.splice(y, 1)
-        this.bases.unshift(makeArr(this.xcount, 0))
-      })
-      this.clearLines(clears.length)
-    }
-    this.resetShape()
-
-    if (this.hasHitBase) {
-      this.pause()
-      this.emit('gameover')
-      return
-    }
-  }
-  // 旋转活动块
-  rotateCurr(triggerRender=true) {
-    let oldpos = {x: this.curr.pos.x, y: this.curr.pos.y }
-    this.curr.shape.rotate()
-
-    // 检测变形后是否会出边界
-    let leftGap = this.currLeftGapSize
-    let rightGap = this.currRightGapSize
-    if (leftGap < 0) {
-      this.curr.pos.x += (-leftGap)
-    }
-    if (rightGap < 0) {
-      this.curr.pos.x += rightGap
-    }
-
-    // 先检测是否会碰到底部，如果会碰到，则回滚变化
-    if (this.hasHitBase) {
-      this.curr.pos = oldpos
-      this.curr.shape.rotate(-1)
-      return false
-    } else {
-      this.predict.pos.x = this.curr.pos.x
-      if (triggerRender) {
-        this.updatePredict()
-        this.emit('render', this.getMasksDiff())
-      }
-      return true
-    }
-  }
-  // 横向移动活动块
-  moveCurrX(offset, triggerRender=true) {
-    let oldx = this.curr.pos.x
-    if (offset <= 0) {
-      offset = Math.max(offset, -this.currLeftGapSize)
-    } else {
-      offset = Math.min(offset, this.currRightGapSize)
-    }
-    this.curr.pos.x += offset
-
-    if (this.hasHitBase) {
-      this.curr.pos.x = oldx
-      return false
-    } else {
-      this.predict.pos.x = this.curr.pos.x
-      if (triggerRender) {
-        this.updatePredict()
-        this.emit('render', this.getMasksDiff())
-      }
-      return true
-    }
-  }
-  // 纵向移动活动块
-  moveCurrY(n, triggerRender=true) {
-    let oldy = this.curr.pos.y
-    let offset = n
-    if (n <= 0) {
-      offset = Math.max(n, -this.currTopGapSize)
-    } else {
-      offset = Math.min(n, this.currBottomGapSize)
-    }
-    if (n != 0 && offset == 0) {
-      return false
-    }
-    this.curr.pos.y += offset
-
-    if (this.hasHitBase) {
-      this.curr.pos.y = oldy
-      return false
-    } else {
-      if (triggerRender) this.emit('render', this.getMasksDiff())
-      return true
-    }
-  }
   dropCurr() {
     this.curr = this.predict
     this.updateBase()
-  }
-  // 活动块距离左边框的剩余格子数（可左移距离）
-  get currLeftGapSize()   { return this.curr.pos.x + this.curr.shape.boundLeft }
-  get currRightGapSize()  { return (this.xcount - 1) - (this.curr.pos.x + this.curr.shape.boundRight) }
-  get currTopGapSize()    { return this.curr.pos.y + this.curr.shape.boundTop }
-  get currBottomGapSize() { return (this.ycount - 1) - (this.curr.pos.y + this.curr.shape.boundBottom) }
-  get hasHitBase() {
-    if (this.currBottomGapSize < 0) return true
-    if (this.curr.shape.grids.some(({x, y}) => {
-      let baseY = y+this.curr.pos.y
-      let baseX = x+this.curr.pos.x
-      if (baseY >= 0 && baseX >= 0) {
-        return this.bases[baseY][baseX] > 0
-      }
-      return false
-    })) {
-      return true
-    }
-    return false
   }
 }
 

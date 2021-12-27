@@ -72,6 +72,15 @@ class Block {
     return true // rotated
   }
 
+  //
+  forEachGrid(fn) {
+    this.shape.grids.forEach((d, y) => {
+      d.forEach((grid, x) => {
+        fn(this.x+x, this.y+y, grid)
+      })
+    })
+  }
+
   // 使用画布绝对坐标定位
   atAbsolutePos(absX, absY) {
     let x = absX - this.x
