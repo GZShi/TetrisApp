@@ -1,3 +1,5 @@
+
+let { makeArray } = require('./utils.js')
 class Render {
   constructor(xcount, ycount) {
     this.bits = []
@@ -50,3 +52,5 @@ class Render {
     return changes
   }
 }
+
+module.exports.Render = Render

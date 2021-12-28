@@ -1,5 +1,6 @@
 const {getGame} = require('../scripts/game')
 const {getControl} = require('../scripts/control')
+const { makeArray } = require('../scripts/utils.js')
 
 let game = getGame()
 let ctrl = getControl()
@@ -54,7 +55,7 @@ class RenderForConsole {
     this.game = game
     this.xcount = game.xcount
     this.ycount = game.ycount
-    this.buffer = makeArr(this.ycount, () => makeArr(this.xcount, ''))
+    this.buffer = makeArray(this.ycount, () => makeArray(this.xcount, ''))
     this.frameCount = 0
   }
 
@@ -66,15 +67,15 @@ class RenderForConsole {
 
     process.stdout.write('\x1Bc')
     console.log(`frameCount=${this.frameCount++} score=${this.game.score}`)
-    console.log(makeArr(this.xcount*2 + 2, '▉').join(''))
+    console.log(makeArray(this.xcount*2 + 2, '▉').join(''))
     this.buffer.forEach(row => {
       console.log('▉' + row.map(color => color ? `${color}▉▉${fgWhite}` : '  ').join('') + '▉')
     })
-    console.log(makeArr(this.xcount*2 + 2, '▉').join(''))
+    console.log(makeArray(this.xcount*2 + 2, '▉').join(''))
   }
 
   drawBackground() {
-    this.buffer = makeArr(this.ycount, () => makeArr(this.xcount, ''))
+    this.buffer = makeArray(this.ycount, () => makeArray(this.xcount, ''))
   }
   drawLines() {
     // ignore
@@ -99,16 +100,4 @@ class RenderForConsole {
     if (x >= this.xcount || y >= this.ycount) return
     this.buffer[y][x] = color
   }
-}
-
-function makeArr(size, fill) {
-  let arr = []
-  for (let i = 0; i < size; i++) {
-    if (typeof fill == 'function') {
-      arr.push(fill())
-    } else {
-      arr.push(fill)
-    }
-  }
-  return arr
 }

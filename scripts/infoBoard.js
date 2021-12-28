@@ -1,3 +1,4 @@
+
 class InfoBoard {
   constructor() {
     this.score = 0
@@ -22,3 +23,5 @@ class InfoBoard {
     this.score += (1 << (n-1)) * (1<<Math.min(this.combo, 5))
   }
 }
+
+module.exports.InfoBoard = InfoBoard

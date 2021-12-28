@@ -1,35 +1,32 @@
-const {getGame, maskType} = require('../scripts/game')
-const {getControl} = require('../scripts/control')
+const { Game } = require('../scripts/game')
 
-let game = getGame()
-let ctrl = getControl()
-ctrl.bindGame(game)
-let render = null
+let n = 13
+let game = new Game(n, n*2)
+let ctrl = game.getController()
+let drawer = null
 
 //
 // control inputs
 //
-exports.tapleft = () => ctrl.tap('left')
-exports.tapup = () => ctrl.tap('top')
-exports.tapright = () => ctrl.tap('right')
-exports.tapdownbegan = () => ctrl.tap('bottom:began')
-exports.tapdownend = () => ctrl.tap('bottom:end')
-exports.taprotate = () => ctrl.tap('rotate')
-exports.tapdrop = () => ctrl.tap('drop')
-exports.tappause = () => ctrl.tap('pause')
-exports.tapstart = () => ctrl.tap('start')
+exports.tapleft = () => ctrl.left()
+exports.tapup = () => ctrl.rotate()
+exports.tapright = () => ctrl.right()
+exports.tapdownbegan = () => ctrl.turboOn()
+exports.tapdownend = () => ctrl.turboOff()
+exports.taprotate = () => ctrl.rotate()
+exports.tapdrop = () => ctrl.drop()
+exports.tappause = () => ctrl.pause()
+exports.tapstart = () => ctrl.start()
 
 exports.debugstep = () => ctrl.tap('debug:step')
 exports.debugup = () => ctrl.tap('debug:up')
 exports.debugdown = () => ctrl.tap('debug:down')
 
 exports.initrender = (div) => {
-  if (!render) {
-    render = new RenderForBrowser(div, game)
-    game.render()
+  if (!drawer) {
+    drawer = new DrawerForBrowser(div, game)
+    drawer.draw()
   }
-  ctrl.tap('start')
-  // ctrl.autoPlay('drop', 'drop', 'drop', 'drop', 'rotate', 'right', 'right', 'drop')
 }
 
 //
@@ -57,7 +54,7 @@ game.listen('render', (changes) => render && render.draw(changes))
 //
 // render
 //
-class RenderForBrowser {
+class DrawerForBrowser {
   constructor(div, game) {
     this.game = game
     this.div = div
@@ -121,13 +118,13 @@ class RenderForBrowser {
   }
 
   drawNextShape() {
-    this.nextGrids.forEach(grid => {
-      grid.style.background = 'gray'
-    })
-    let {pos, shape} = this.game.next
-    shape.grids.forEach(grid => {
-      this.nextGrids[4*(grid.y-shape.boundTop) + grid.x].style.background = '#c7b77b'
-    })
+    // this.nextGrids.forEach(grid => {
+    //   grid.style.background = 'gray'
+    // })
+    // let {pos, shape} = this.game.next
+    // shape.grids.forEach(grid => {
+    //   this.nextGrids[4*(grid.y-shape.boundTop) + grid.x].style.background = '#c7b77b'
+    // })
   }
   drawGrid(x, y, className='grid') {
     if (x < 0 || y < 0) return

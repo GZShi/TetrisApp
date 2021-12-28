@@ -1,3 +1,5 @@
+let { makeArray } = require('./utils.js')
+
 class BaseBlock {
   constructor(xcount, ycount) {
     this.xcount = xcount
@@ -52,3 +54,5 @@ class BaseBlock {
     return this.atAbsolutePos(x, y)
   }
 }
+
+module.exports.BaseBlock = BaseBlock
