@@ -8,6 +8,17 @@ class Block {
     this.yRange = yRange
   }
 
+  // 生成预览
+  getDropPredict(baseBlock) {
+    let predict = new Block(this.x, this.y, this.shape, this.xRange, this.yRange)
+    let moved = false
+    do {
+      moved = predict.move(baseBlock, 1, 0)
+    } while (moved)
+
+    return predict
+  }
+
   // move
   // 将block按偏移量进行移动
   // 如果目标位置没有与baseBlock重叠，返回成功
