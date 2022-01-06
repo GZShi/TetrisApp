@@ -3,14 +3,15 @@ class Ticker {
     this.count = 0
     this.stepCount = 10
     this.handler = -1
+    this.turbo = false
   }
 
   run(cb, interval=100) {
     if (this.handler != -1) return
     this.handler = setInterval(() => {
       this.count++
-      if (this.turbo == false && this.count % this.stepCount != 0) return
       if (!cb || typeof cb !== 'function') return
+      if (this.turbo == false && this.count % this.stepCount != 0) return
       
       cb()
     }, interval)

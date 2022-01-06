@@ -6,6 +6,7 @@ class Block {
     this.shape = shape
     this.xRange = xRange
     this.yRange = yRange
+    this.type = 'block'
   }
 
   // 生成预览
@@ -13,7 +14,7 @@ class Block {
     let predict = new Block(this.x, this.y, this.shape, this.xRange, this.yRange)
     let moved = false
     do {
-      moved = predict.move(baseBlock, 1, 0)
+      moved = predict.move(baseBlock, 0, 1)
     } while (moved)
 
     return predict
@@ -85,10 +86,8 @@ class Block {
 
   //
   forEachGrid(fn) {
-    this.shape.grids.forEach((d, y) => {
-      d.forEach((grid, x) => {
-        fn(this.x+x, this.y+y, grid)
-      })
+    this.shape.grids.forEach(grid => {
+      fn(this.x+grid.x, this.y+grid.y, grid)
     })
   }
 

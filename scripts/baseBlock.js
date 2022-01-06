@@ -1,23 +1,26 @@
 let { makeArray } = require('./utils.js')
+let { Event } = require('./evbase.js')
 
 class BaseBlock {
   constructor(xcount, ycount) {
+    this.ev = new Event()
     this.xcount = xcount
     this.ycount = ycount
 
     this.grids = makeArray(ycount, y => makeArray(xcount, null))
+    this.type = 'baseblock'
   }
 
   mergeBlock(block) {
     let merged = false
     let cleans = []
-    block.forEachGrid(d => {
-      let {absX, absY, grid} = d
+    block.forEachGrid((absX, absY, grid) => {
       let row = this.grids[absY]
       if (!row) return
 
       row[absX] = grid
       merged = true
+      console.log(`merged: absX=${absX} absY=${absY}`)
 
       // 判断当前行是否完整了
       if (row.every(grid => grid)) {
@@ -37,7 +40,7 @@ class BaseBlock {
       this.ev.emit('cleanLines', cleans.length)
     }
     if (merged) {
-      this.ev.emit('mergeBlock')
+      this.ev.emit('mergeBlock', this.grids)
     }
   }
 
@@ -46,6 +49,17 @@ class BaseBlock {
   checkOverflowX() { return false }
   checkOverflowY() { return false }
 
+
+  //
+  forEachGrid(fn) {
+    this.grids.forEach((d, y) => {
+      d.forEach((grid, x) => {
+        if (grid) {
+          fn(x, y, grid)
+        }
+      })
+    })
+  }
   atAbsolutePos(absX, absY) {
     if (this.grids[absY]) return this.grids[absY][absX]
     return null

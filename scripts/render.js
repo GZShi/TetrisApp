@@ -7,6 +7,7 @@ class Render {
       let bit = {
         type: 'blank',
         version: 0,
+        x, y
       }
       this.bits.push(bit)
       return bit
@@ -28,13 +29,13 @@ class Render {
       block.forEachGrid((absX, absY, grid) => {
         let bits = this.bitTable[absY]
         if (!bits) return
-        let bit = d[absX]
+        let bit = bits[absX]
         if (!bit) return
 
         bit.version = version
-        if (bit.type !== grid.type) {
+        if (bit.type !== block.type) {
           bit.action = (bit.type === 'blank' ? 'add' : 'change')
-          bit.type = grid.type
+          bit.type = block.type
           changes.push(bit)
         }
       })

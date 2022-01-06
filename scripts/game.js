@@ -21,7 +21,7 @@ class Game {
       base: new BaseBlock(xcount, ycount),
       curr: null,
       predict: null,
-      nexts: [null],
+      nexts: [],
     }
   }
   listen(evName, callback) {
@@ -33,12 +33,15 @@ class Game {
 
   makeBlock(type) {
     let shape = 'IOLJZST'.indexOf(type) >= 0 ? getShape(type) : getRandShape()
-    let x = (xcount >> 1) - 2
+    let x = (this.xcount >> 1) - 2
     let y = -shape.boundTop
-    return new Block(x, y, shape, xRange, yRange)
+    return new Block(x, y, shape, [0, this.xcount], [0, this.ycount])
   }
 
   updateCurrBlock() {
+    if (this.block.nexts.length <= 0) {
+      this.block.nexts.push(this.makeBlock('I'))
+    }
     this.block.curr = this.block.nexts.shift()
     this.block.nexts.push(this.makeBlock('I'))
     this.updatePredictPos()
@@ -46,6 +49,11 @@ class Game {
 
   updatePredictPos() {
     this.block.predict = this.block.curr.getDropPredict(this.block.base)
+    this.updateView()
+  }
+
+  updateView() {
+    this.ev.emit('render', this.r.update([this.block.base, this.block.curr]))
   }
 
   stepover() {
@@ -56,77 +64,77 @@ class Game {
     if (!moved) {
       this.block.base.mergeBlock(this.block.curr)
       this.updateCurrBlock()
+      return
     }
 
-    this.ev.emit('render')
+    this.updateView()
   }
 
   getController() {
-    let wrapPredictUpdater = (actionFunc) => {
-      let moved = actionFunc()
-      if (moved) {
-        this.updatePredictPos()
-        this.ev.emit('render')
-      }
-      return moved
-    }
     let self = this
-    return {
-      left: wrapPredictUpdater(() => self.state === 'running' && self.block.curr.move(self.block.base, -1, 0)),
-      right: wrapPredictUpdater(() => self.state === 'running' && self.block.curr.move(self.block.base, 1, 0)),
-      rotate: wrapPredictUpdater(() => self.state === 'running' && self.block.curr.move(self.block.base)),
-      turboOn() { self.state === 'running' && self.ticker.turboOn() },
-      turboOff() { self.state === 'running' && self.ticker.turboOff() },
-      drop() {
-        if (self.state !== 'running') return false
-        self.block.curr = self.block.predict
-        self.block.base.mergeBlock(self.block.curr)
-        self.updateCurrBlock()
-        self.ev.emit('render')
-        return true
-      },
-      start() {
-        debugger
-        switch (self.state) {
-        case 'uninit':
-          self.reset()
-          self.start()
-          break
-        case 'running': break
-        case 'paused':
-          self.state = 'running';
-          self.ticker.run(() => self.stepover())
-          break
-        case 'stopped':
-          self.reset()
-          self.start()
-          break
+    let wrapPredictUpdater = (actionFunc) => {
+      return function () {
+        let moved = actionFunc()
+        if (moved) {
+          self.updatePredictPos()
         }
-      },
-      pause() {
-        switch (self.state) {
-        case 'uninit': break
-        case 'running':
-          self.state = 'paused';
-          self.ticker.stop()
-          break
-        case 'paused': break
-        case 'stopped': break
-        }
-      },
-      reset() {
-        self.ticker.stop()
-        self.state = 'paused'
-        self.info = new InfoBoard()
-        self.block = {
-          base: new BaseBlock(self.xcount, self.ycount),
-          curr: null,
-          predict: null,
-          nexts: makeArray(5, () => self.makeBlock())
-        }
-        self.updateCurrBlock()
-      },
+        return moved
+      }
     }
+    let left = wrapPredictUpdater(() => self.state === 'running' && self.block.curr.move(self.block.base, -1, 0))
+    let right = wrapPredictUpdater(() => self.state === 'running' && self.block.curr.move(self.block.base, 1, 0))
+    let rotate = wrapPredictUpdater(() => self.state === 'running' && self.block.curr.rotate(self.block.base))
+    let turboOn = () => { self.state === 'running' && self.ticker.turboOn() }
+    let turboOff = () => { self.state === 'running' && self.ticker.turboOff() }
+    let drop = () => {
+      if (self.state !== 'running') return false
+      self.block.curr = self.block.predict
+      self.block.base.mergeBlock(self.block.curr)
+      self.updateCurrBlock()
+      return true
+    }
+    let start = () => {
+      switch (self.state) {
+      case 'uninit':
+        reset()
+        start()
+        break
+      case 'running': break
+      case 'paused':
+        self.state = 'running';
+        self.ticker.run(() => self.stepover())
+        break
+      case 'stopped':
+        reset()
+        start()
+        break
+      }
+    }
+    let pause = () => {
+      switch (self.state) {
+      case 'uninit': break
+      case 'running':
+        self.state = 'paused';
+        self.ticker.stop()
+        break
+      case 'paused': break
+      case 'stopped': break
+      }
+    }
+    let reset = () => {
+      self.ticker.stop()
+      self.state = 'paused'
+      self.info = new InfoBoard()
+      self.block = {
+        base: new BaseBlock(self.xcount, self.ycount),
+        curr: null,
+        predict: null,
+        nexts: makeArray(5, () => self.makeBlock())
+      }
+      self.updateCurrBlock()
+    }
+
+    return {left, right, rotate, turboOn, turboOff, drop, start, pause, reset }
   }
 }
 

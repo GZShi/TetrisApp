@@ -8,4 +8,6 @@ module.exports.makeArray = function (n, fn) {
       ret.push(fn)
     }
   }
+
+  return ret
 }

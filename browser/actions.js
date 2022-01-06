@@ -5,6 +5,8 @@ let game = new Game(n, n*2)
 let ctrl = game.getController()
 let drawer = null
 
+console.log('game ctrl:', ctrl)
+
 //
 // control inputs
 //
@@ -24,7 +26,7 @@ exports.debugdown = () => ctrl.tap('debug:down')
 
 exports.initrender = (div) => {
   if (!drawer) {
-    drawer = new DrawerForBrowser(div, game)
+    drawer = new DrawerForBrowser(div, n, n*2)
     drawer.draw()
   }
 }
@@ -48,21 +50,20 @@ game.listen('gameover', () => {
   alert(`gameover`)
   ctrl.tap('pause')
 })
-game.listen('render', (changes) => render && render.draw(changes))
+game.listen('render', (changes) => drawer && drawer.draw(changes))
 
 
 //
 // render
 //
 class DrawerForBrowser {
-  constructor(div, game) {
-    this.game = game
+  constructor(div, xcount, ycount) {
     this.div = div
     let style = getComputedStyle(div)
     this.w = parseInt(style.width, 10)-1
     this.h = parseInt(style.height, 10)-1
-    this.xcount = game.xcount
-    this.ycount = game.ycount
+    this.xcount = xcount
+    this.ycount = ycount
     this.gridw = (this.w/this.xcount)
     this.gridh = (this.h/this.ycount)
 
@@ -106,10 +107,10 @@ class DrawerForBrowser {
     changes = changes || []
     changes.forEach(({x, y, type}) => {
       switch(type) {
-      case maskType.base:    this.drawGrid(x, y, 'grid base');    break;
-      case maskType.shape:   this.drawGrid(x, y, 'grid curr');    break;
-      case maskType.predict: this.drawGrid(x, y, 'grid predict'); break;
-      case maskType.empty:   this.drawGrid(x, y, 'grid');         break;
+      case 'baseblock':    this.drawGrid(x, y, 'grid base');    break;
+      case 'block':   this.drawGrid(x, y, 'grid curr');    break;
+      // case maskType.predict: this.drawGrid(x, y, 'grid predict'); break;
+      case 'blank':   this.drawGrid(x, y, 'grid');         break;
       default:
       }
     })
