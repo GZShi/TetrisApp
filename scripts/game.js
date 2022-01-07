@@ -40,10 +40,13 @@ class Game {
 
   updateCurrBlock() {
     if (this.block.nexts.length <= 0) {
-      this.block.nexts.push(this.makeBlock('I'))
+      this.block.nexts.push(this.makeBlock())
     }
+
     this.block.curr = this.block.nexts.shift()
-    this.block.nexts.push(this.makeBlock('I'))
+    this.block.curr.type = 'block'
+
+    this.block.nexts.push(this.makeBlock())
     this.updatePredictPos()
   }
 
@@ -53,7 +56,13 @@ class Game {
   }
 
   updateView() {
-    this.ev.emit('render', this.r.update([this.block.base, this.block.curr]))
+    let blocks = [
+      this.block.base,
+      this.block.predict,
+      this.block.curr,
+    ]
+    let changes = this.r.update(blocks)
+    this.ev.emit('render', changes)
   }
 
   stepover() {

@@ -107,9 +107,9 @@ class DrawerForBrowser {
     changes = changes || []
     changes.forEach(({x, y, type}) => {
       switch(type) {
-      case 'baseblock':    this.drawGrid(x, y, 'grid base');    break;
+      case 'base':    this.drawGrid(x, y, 'grid base');    break;
       case 'block':   this.drawGrid(x, y, 'grid curr');    break;
-      // case maskType.predict: this.drawGrid(x, y, 'grid predict'); break;
+      case 'predict': this.drawGrid(x, y, 'grid predict'); break;
       case 'blank':   this.drawGrid(x, y, 'grid');         break;
       default:
       }

@@ -12,6 +12,7 @@ class Block {
   // 生成预览
   getDropPredict(baseBlock) {
     let predict = new Block(this.x, this.y, this.shape, this.xRange, this.yRange)
+    predict.type = 'predict'
     let moved = false
     do {
       moved = predict.move(baseBlock, 0, 1)

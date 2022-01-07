@@ -8,7 +8,7 @@ class BaseBlock {
     this.ycount = ycount
 
     this.grids = makeArray(ycount, y => makeArray(xcount, null))
-    this.type = 'baseblock'
+    this.type = 'base'
   }
 
   mergeBlock(block) {
