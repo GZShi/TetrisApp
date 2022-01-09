@@ -42,6 +42,8 @@ class BaseBlock {
     if (merged) {
       this.ev.emit('mergeBlock', this.grids)
     }
+
+    return cleans.length
   }
 
   move() { return false } // can't move

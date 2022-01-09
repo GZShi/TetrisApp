@@ -16,13 +16,7 @@ class Game {
     this.ycount = ycount
     this.r = new Render(xcount, ycount)
 
-    this.info = new InfoBoard()
-    this.block = {
-      base: new BaseBlock(xcount, ycount),
-      curr: null,
-      predict: null,
-      nexts: [],
-    }
+    resetGameState(this)
   }
   listen(evName, callback) {
     return this.ev.listen(evName, callback)
@@ -133,18 +127,29 @@ class Game {
     let reset = () => {
       self.ticker.stop()
       self.state = 'paused'
-      self.info = new InfoBoard()
-      self.block = {
-        base: new BaseBlock(self.xcount, self.ycount),
-        curr: null,
-        predict: null,
-        nexts: makeArray(5, () => self.makeBlock())
-      }
+      resetGameState(game)
       self.updateCurrBlock()
     }
 
     return {left, right, rotate, turboOn, turboOff, drop, start, pause, reset }
   }
+}
+
+function resetGameState(game) {
+  let base = new BaseBlock(game.xcount, game.ycount)
+  let info = new InfoBoard()
+
+  game.info = info
+  game.block = {
+    base,
+    curr: null,
+    predict: null,
+    nexts: makeArray(5, () => game.makeBlock())
+  }
+
+  base.listen('cleanLines', n => {
+    info.cleanLines(n)
+  })
 }
 
 module.exports.Game = Game
