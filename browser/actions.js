@@ -1,6 +1,6 @@
 const { Game } = require('../scripts/game')
 
-let n = 13
+let n = 8
 let game = new Game(n, n*2)
 let ctrl = game.getController()
 let drawer = null
@@ -34,22 +34,13 @@ exports.initrender = (div) => {
 //
 // game events
 //
-game.listen('score:changed', score => {
+game.listen('change:info', ({score, combo, lines, level}) => {
   document.querySelector('span#score').innerText = String(score).padStart(4, '0')
-})
-game.listen('lines:changed', lines => {
   document.querySelector('span#lines').innerText = String(lines).padStart(4, '0')
-})
-game.listen('combo:changed', combo => {
   document.querySelector('span#combo').innerText = String(combo).padStart(4, '0')
-})
-game.listen('level:changed', level => {
   document.querySelector('span#level').innerText = String(level)
 })
-game.listen('gameover', () => {
-  alert(`gameover`)
-  ctrl.tap('pause')
-})
+game.listen('gameover', () => alert(`gameover`) )
 game.listen('render', (changes) => drawer && drawer.draw(changes))
 
 

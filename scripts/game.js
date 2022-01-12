@@ -65,7 +65,14 @@ class Game {
     // move curr block
     let moved = this.block.curr.move(this.block.base, 0, 1)
     if (!moved) {
-      this.block.base.mergeBlock(this.block.curr)
+      let collapsed = this.block.base.mergeBlock(this.block.curr)
+      if (!collapsed) {
+        this.ticker.stop()
+        this.state = 'stopped'
+        setTimeout(() => this.ev.emit('gameover'), 10)
+        this.updateView()
+        return
+      }
       this.updateCurrBlock()
       return
     }
@@ -97,6 +104,7 @@ class Game {
       return true
     }
     let start = () => {
+      self.ev.emit('change:info', self.info.cleanLines(0))
       switch (self.state) {
       case 'uninit':
         reset()
@@ -104,7 +112,7 @@ class Game {
         break
       case 'running': break
       case 'paused':
-        self.state = 'running';
+        self.state = 'running'
         self.ticker.run(() => self.stepover())
         break
       case 'stopped':
@@ -127,7 +135,7 @@ class Game {
     let reset = () => {
       self.ticker.stop()
       self.state = 'paused'
-      resetGameState(game)
+      resetGameState(self)
       self.updateCurrBlock()
     }
 
@@ -147,8 +155,10 @@ function resetGameState(game) {
     nexts: makeArray(5, () => game.makeBlock())
   }
 
-  base.listen('cleanLines', n => {
-    info.cleanLines(n)
+  base.ev.listen('cleanLines', n => {
+    let payload = info.cleanLines(n)
+    game.ev.emit('change:info', payload)
+    game.ticker.setLevel(payload.level)
   })
 }
 

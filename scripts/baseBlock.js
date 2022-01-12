@@ -12,14 +12,20 @@ class BaseBlock {
   }
 
   mergeBlock(block) {
+    let collapsed = false
     let merged = false
     let cleans = []
     block.forEachGrid((absX, absY, grid) => {
       let row = this.grids[absY]
       if (!row) return
 
-      row[absX] = grid
-      merged = true
+      if (row[absX]) {
+        collapsed = true
+      } else {
+        row[absX] = grid
+        merged = true
+      }
+
       console.log(`merged: absX=${absX} absY=${absY}`)
 
       // 判断当前行是否完整了
@@ -43,7 +49,7 @@ class BaseBlock {
       this.ev.emit('mergeBlock', this.grids)
     }
 
-    return cleans.length
+    return collapsed
   }
 
   move() { return false } // can't move

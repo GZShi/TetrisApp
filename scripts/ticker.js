@@ -1,7 +1,8 @@
+const MaxSpeed = 10
 class Ticker {
   constructor() {
     this.count = 0
-    this.stepCount = 10
+    this.stepCount = MaxSpeed
     this.handler = -1
     this.turbo = false
   }
@@ -30,6 +31,12 @@ class Ticker {
   turboOff() { this.turbo = false }
   speedUp() {
     this.stepCount -= 1
+    if (this.stepCount <= 0) {
+      this.stepCount = 1
+    }
+  }
+  setLevel(n) {
+    this.stepCount = MaxSpeed - (n - 1)
     if (this.stepCount <= 0) {
       this.stepCount = 1
     }
