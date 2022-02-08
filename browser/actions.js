@@ -1,6 +1,6 @@
 const { Game } = require('../scripts/game')
 
-let n = 8
+let n = 10
 let game = new Game(n, n*2)
 let ctrl = game.getController()
 let drawer = null

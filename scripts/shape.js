@@ -87,5 +87,14 @@ function randArr(arr) {
   return arr[randN(arr.length)]
 }
 function randN(n) {
-  return (Math.random()*n)>>0
+  return (seededRandom()*n)>>0
+}
+
+let seed = 5
+function seededRandom() {
+  seed = (seed * 9301 + 49297) % 233280
+  return seed / 233280.0
+}
+exports.setSeed = function (newSeed=5) {
+  this.seed = seed
 }

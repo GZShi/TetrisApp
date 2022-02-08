@@ -11,6 +11,7 @@ class BaseBlock {
     this.type = 'base'
   }
 
+  // 返回值是：是否出现形状重叠
   mergeBlock(block) {
     let collapsed = false
     let merged = false
